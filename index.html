@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lock Screen Demo by XIXXJ44</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header {
+            position: absolute;
+            top: 30px;
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ff0000;
+            text-shadow: 0 0 8px #ff0000;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #ff0000;
+        }
+        
+        .time {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .date {
+            font-size: 18px;
+            margin-bottom: 50px;
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .key {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .key:active {
+            transform: scale(0.95);
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .pin-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .pin-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        
+        .pin-dot.filled {
+            background-color: #fff;
+        }
+        
+        .message {
+            position: absolute;
+            bottom: 50px;
+            text-align: center;
+            color: #ff0000;
+            font-size: 16px;
+            max-width: 80%;
+        }
+        
+        .unlock-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">HACKED BY XIXXJ44</div>
+        <div class="subtitle">Demo Lock Screen</div>
+    </div>
+    
+    <div class="time" id="time">00:00</div>
+    <div class="date" id="date">Monday, January 1</div>
+    
+    <div class="pin-display" id="pin-display">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+    </div>
+    
+    <div class="keypad">
+        <div class="key" data-value="1">1</div>
+        <div class="key" data-value="2">2</div>
+        <div class="key" data-value="3">3</div>
+        <div class="key" data-value="4">4</div>
+        <div class="key" data-value="5">5</div>
+        <div class="key" data-value="6">6</div>
+        <div class="key" data-value="7">7</div>
+        <div class="key" data-value="8">8</div>
+        <div class="key" data-value="9">9</div>
+        <div class="key" data-value="clear">Clear</div>
+        <div class="key" data-value="0">0</div>
+        <div class="key" data-value="enter">Enter</div>
+    </div>
+    
+    <div class="message">Enter PIN: 1234 to unlock this demo</div>
+    
+    <div class="unlock-message" id="unlock-message">
+        <h2>Device Unlocked!</h2>
+        <p>This is just a demonstration.</p>
+        <p>In a real application, this would return control to the user.</p>
+        <button id="reset-btn" style="margin-top: 20px; padding: 10px 20px; background: #333; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Reset Demo</button>
+    </div>
+    
+    <script>
+        // Update time and date
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Format time
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            
+            document.getElementById('time').textContent = `${hours}:${minutes}`;
+            
+            // Format date
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            const day = days[now.getDay()];
+            const month = months[now.getMonth()];
+            const date = now.getDate();
+            
+            document.getElementById('date').textContent = `${day}, ${month} ${date}`;
+        }
+        
+        // Update time every minute
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+        
+        // PIN handling
+        const correctPin = '1122'; // Demo PIN
+        let currentPin = '';
+        const pinDots = document.querySelectorAll('.pin-dot');
+        
+        // Handle keypad clicks
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('click', () => {
+                const value = key.getAttribute('data-value');
+                
+                if (value === 'clear') {
+                    // Clear PIN
+                    currentPin = '';
+                    updatePinDisplay();
+                } else if (value === 'enter') {
+                    // Check PIN
+                    if (currentPin === correctPin) {
+                        document.getElementById('unlock-message').style.display = 'block';
+                    } else {
+                        // Shake effect for wrong PIN
+                        const pinDisplay = document.getElementById('pin-display');
+                        pinDisplay.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            pinDisplay.style.animation = '';
+                        }, 500);
+                        currentPin = '';
+                        updatePinDisplay();
+                    }
+                } else if (currentPin.length < 4) {
+                    // Add digit to PIN
+                    currentPin += value;
+                    updatePinDisplay();
+                }
+            });
+        });
+        
+        // Update PIN display dots
+        function updatePinDisplay() {
+            pinDots.forEach((dot, index) => {
+                if (index < currentPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+        
+        // Reset demo button
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            document.getElementById('unlock-message').style.display = 'none';
+            currentPin = '';
+            updatePinDisplay();
+        });
+        
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Handle escape keys and prevent navigation
+        document.addEventListener('keydown', function(e) {
+            // Prevent common navigation keys
+            if (e.key === 'Escape' || e.key === 'F5' || 
+                (e.ctrlKey && (e.key === 'r' || e.key === 'F5'))) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // This is only a demo and doesn't actually lock anything
+        // In a real implementation, you would need server-side components
+        // and this would raise serious ethical and legal concerns
+    </script>
+</body>
+</html>
